@@ -37,10 +37,10 @@ public:
    string name_feasiblePop;
    string name_params;
 
-   MOP *mop;
-   Randomizer *r;
+   MOP *mop; // Reference to MOP to be solve.
+   Randomizer *r; // Reference to the random engine to be used.
 
-   /* Atributos del NSGA */
+   /* Attributes of NSGA */
    Population *parent_pop;
    Population *child_pop;
    Population *mixed_pop;
