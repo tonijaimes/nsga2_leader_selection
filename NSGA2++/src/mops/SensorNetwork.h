@@ -17,7 +17,8 @@ public:
 
 private:
    vector<pair<int,int> > sensorsPos;
-   vector<vector<int> > clusters; //Information of the clusters formed.
+   double dist(pair<int,int> const &p1, pair<int,int> const &p2) const;
+   int findClosestLeader(vector<vector<int> > clusters, int i) const;
 };
 
 #endif /*SENSOR_H_*/

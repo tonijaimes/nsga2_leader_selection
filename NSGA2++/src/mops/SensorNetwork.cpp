@@ -8,12 +8,12 @@ using namespace std;
 SensorNet::SensorNet(int nNodes, int nRows, int nCols) : MOP("SensorNet", nNodes, 2, 0)
 {
    // The base is located in the corner (0,0) of the grid.
-   sensorsPos.push_back(make_pair(0, 0))
+   sensorsPos.push_back(make_pair(0, 0));
 
-   srand();
+   srand(100);
 
-   // Generate random positions for nNodes sensors in a nRowsxnCols grid
-   int x, y;
+   // Generate random positions for nNodes sensors in a nRows x nCols grid
+   int x, y, i;
    for (i = 0; i < nNodes; ++i) {
       x = 1 + rand()%nCols ;// Random integer in 1,...,nCols
       y = 1 + rand()%nRows; // Random integer in 1,...,nRows
@@ -23,27 +23,37 @@ SensorNet::SensorNet(int nNodes, int nRows, int nCols) : MOP("SensorNet", nNodes
 
 SensorNet::~SensorNet() {}
 
+/*
+ * leaderOrNot: binary vector indicating whether i-th node is leader (value 1) or not (value 0)
+ * eval: a vector in which each computed objective value will be stored.
+ * gcons: to store constraint values, but it is not used here.
+ */
 void SensorNet::evaluate(vector<int> const &leaderOrNot, vector<double> &eval,  vector<double> &gcons) const
 {
-   // Gather informatio of the clusters formed.
-   // Obtain the leaders encoded in the binaryString
-   int pos = 1;
+
+   // Gather information of the clusters formed.
+   // Each cluster vector will contain the indexes of the nodes conforming the cluster.
+   vector<vector<int> > clusters;
+
+   //First only the leaders of each cluster are inserted.
+   int pos = 1; // positions start at 1, because the base is located at position 0.
    int numLeaders = 0;
-   for (isLeader : leaderOrNot) {
+   for (auto isLeader : leaderOrNot) {
       if (isLeader) {
-         clusters.push_back( vector<int>(pos) );
+         clusters.emplace_back( pos );
          numLeaders++;
       }
       pos++;
    }
 
-   // Obtain the members of each cluster using k-medoids
+   // Obtain the members of each cluster using k-medoids method.
    // I.e., which is the closest leader for each member.
    pos = 1;
-   for (isLeader : leaderOrNot) {
+   int myCluster;
+   for (auto isLeader : leaderOrNot) {
       if (!isLeader) {
-         myLeader = findClosestLeader(clusters);
-         clusters[myLeader].push_back(pos);
+    	  myCluster = findClosestLeader(clusters, pos);
+        clusters[myCluster].push_back(pos);
       }
       pos++;
    }
@@ -51,8 +61,8 @@ void SensorNet::evaluate(vector<int> const &leaderOrNot, vector<double> &eval,  
 
    // Objective 1: Distance of leaders to the base
    double totalDist = 0;
-   int pos = 1;
-   for (c : clusters) {
+   pos = 1;
+   for (auto c : clusters) {
       totalDist += dist(sensorsPos[ c[0] ], sensorsPos[0]);
    }
    eval[0] = totalDist / numLeaders;
@@ -61,14 +71,14 @@ void SensorNet::evaluate(vector<int> const &leaderOrNot, vector<double> &eval,  
    // Objective 2: Distance of cluster members to their leader.
    double sumDistCluster;
    double sumDist;
-   for (c : clusters) {
+   for (auto c : clusters) {
 
       sumDistCluster = 0;
-      for (int i = 1; i < c.size(); ++i) {
+      for (unsigned int i = 1; i < c.size(); ++i) {
          // Sumar distancia del leader al sensor i
-         sumDistCluster += dist(sensorsPos[ c[0] ], sensorsPos[ [i] ]);
+         sumDistCluster += dist(sensorsPos[ c[0] ], sensorsPos[ c[i] ]);
       }
-      sumDist += sumDistCluster;
+      sumDist += sumDistCluster / c.size();
    }
    eval[1] = sumDist / numLeaders;
 
@@ -78,6 +88,30 @@ void SensorNet::evaluate(vector<int> const &leaderOrNot, vector<double> &eval,  
    eval[2] = 0;
 
 }
+
+double SensorNet::dist(pair<int,int> const &p1, pair<int,int> const &p2) const {
+	return 0.0;
+}
+
+int SensorNet::findClosestLeader(vector<vector<int> > clusters, int i) const {
+	int myCluster;
+
+	int currentCluster = 0;
+	double minDist = 1e7;
+	double d;
+	for (auto c : clusters) {
+	   // Compute distance from leader of cluster c to i-th node.
+	   d = dist(sensorsPos[ c[0] ], sensorsPos[i]);
+	   if (d < minDist) {
+	      minDist = d;
+	      myCluster = currentCluster;
+	   }
+	   currentCluster++;
+	}
+
+	return myCluster;
+}
+
 
 void SensorNet::evaluate(double const *x, double *eval, double *gcons) const {}
 
