@@ -1,0 +1,5 @@
+E_ch  = 100mJ + 0.2mJ * d_base^2 + 10mj * nMembers
+
+E_mb = 100mJ + 0.2mJ * d_head^2
+
+NO toma en cuenta los sensores que murieron durante la ronda de mensajes.
