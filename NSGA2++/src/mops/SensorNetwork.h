@@ -16,8 +16,13 @@ public:
    void evaluate(vector<int> const &x, vector<double> &fx, vector<double> &gcons) const;
 
 private:
+   int const BASE_ID = 0;
    vector<pair<int,int> > sensorsPos;
+   double const initEnergy = 9.0e6; // Energy given in micro Joules, 9x10^6 micro Joules = 9 Joules
+
+
    double dist(pair<int,int> const &p1, pair<int,int> const &p2) const;
+   double distPow(pair<int, int> const &x, pair<int, int> const &y) const;
    int findClosestLeader(vector<vector<int> > clusters, int i) const;
 };
 

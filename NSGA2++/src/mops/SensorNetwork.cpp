@@ -34,6 +34,7 @@ void SensorNet::evaluate(vector<int> const &leaderOrNot, vector<double> &eval,  
    // Gather information of the clusters formed.
    // Each cluster vector will contain the indexes of the nodes conforming the cluster.
    vector<vector<int> > clusters;
+   vector<double> energy(leaderOrNot.size(), initEnergy); // Residual energy of each sensor.
 
    //First only the leaders of each cluster are inserted.
    int pos = 1; // positions start at 1, because the base is located at position 0.
@@ -85,12 +86,51 @@ void SensorNet::evaluate(vector<int> const &leaderOrNot, vector<double> &eval,  
 
 
    // Objective 3: Residual energy.
-   eval[2] = 0;
+   // Compute energy used for the current round of messaging
+   // For leaders
+   double energyUsed;
+   for (auto c : clusters) {
+      energyUsed = 100 +
+                   0.2*distPow(sensorsPos[ c[0] ], sensorsPos[BASE_ID]) +
+                   10 *(c.size()-1);
+      energy[ c[0] ] -= energyUsed;
+
+      //if (energy[ c[0] ] <= 0) {
+      //   energy[ c[0] ] = 0.0;
+      //}
+   }
+
+
+   // For cluster members
+   for (auto c : clusters) {
+      for (unsigned int i = 1; i < c.size(); ++i) {
+         energyUsed = 100 + 0.2* distPow(sensorsPos[ c[i] ], sensorsPos[ c[0] ]);
+         energy[ c[0] ] -= energyUsed;
+      //   if (energy[i] <= 0) {
+         //}
+      }
+   }
+
+   double energyLeaders=0;
+   for (auto c : clusters) {
+      energyLeaders += energy[ c[0] ];
+   }
+
+   eval[2] = energyLeaders / numLeaders;
 
 }
 
-double SensorNet::dist(pair<int,int> const &p1, pair<int,int> const &p2) const {
-	return 0.0;
+double SensorNet::dist(pair<int,int> const &x, pair<int,int> const &y) const {
+   double d = sqrt( pow(x.first - y.first, 2) + pow(x.second - y.second, 2) );
+
+   return d;
+}
+
+double SensorNet::distPow(pair<int, int> const &x, pair<int, int> const &y) const
+{
+   double d = pow(x.first - y.first, 2) + pow(x.second - y.second, 2);
+
+   return d;
 }
 
 int SensorNet::findClosestLeader(vector<vector<int> > clusters, int i) const {
