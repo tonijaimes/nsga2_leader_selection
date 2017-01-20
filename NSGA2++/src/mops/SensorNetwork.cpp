@@ -28,8 +28,10 @@ SensorNet::~SensorNet() {}
  * eval: a vector in which each computed objective value will be stored.
  * gcons: to store constraint values, but it is not used here.
  */
-void SensorNet::evaluate(vector<int> const &leaderOrNot, vector<double> &eval,  vector<double> &gcons) const
+void SensorNet::evaluate(vector<double> const &x, vector<int> const &leaderOrNot, vector<double> &eval,  vector<double> &gcons) const
 {
+
+   cout << "Entrando a evaluate." << endl;
 
    // Gather information of the clusters formed.
    // Each cluster vector will contain the indexes of the nodes conforming the cluster.
@@ -153,7 +155,4 @@ int SensorNet::findClosestLeader(vector<vector<int> > clusters, int i) const {
 }
 
 
-void SensorNet::evaluate(double const *x, double *eval, double *gcons) const {}
-
-void SensorNet::evaluate(vector<double> const &x, vector<double> &eval,  vector<double> &gcons) const {}
 

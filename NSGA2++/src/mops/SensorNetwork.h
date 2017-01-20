@@ -10,10 +10,13 @@ public:
    SensorNet(int nNodos = 20, int nRows = 20, int nCols = 50);
 	virtual ~SensorNet();
 	
-   void evaluate(vector<double> const &x, vector<double> &fx, vector<double> &gcons) const;
-   void evaluate(double const *x, double *fx, double *gcons) const;
+   void evaluate(vector<double> const &x, vector<int> const &gene,
+                 vector<double> &fx, vector<double> &gcons) const;
 
-   void evaluate(vector<int> const &x, vector<double> &fx, vector<double> &gcons) const;
+//   void evaluate(vector<double> const &x, vector<double> &fx, vector<double> &gcons) const;
+//   void evaluate(double const *x, double *fx, double *gcons) const;
+//
+//   void evaluate(vector<int> const &x, vector<double> &fx, vector<double> &gcons) const;
 
 private:
    int const BASE_ID = 0;

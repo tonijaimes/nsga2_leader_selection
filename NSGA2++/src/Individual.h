@@ -28,6 +28,8 @@ individual;
 */
 
 #include <vector>
+#include <fstream>
+
 #include "RandUtils.h"
 
 
@@ -41,9 +43,19 @@ public:
          vector<pair<double,double> > &range_bivar, Randomizer *r);
    ~Individual();
 
+   void copyIndividual(Individual &ind);
+
    void rndInitialize(int nreal, int nobj, int ncon, int nbin, vector<int> &nbits,
          vector<pair<double,double> > &range_realvar,
          vector<pair<double,double> > &range_bivar, Randomizer *r);
+
+   void initialize(vector<double>& x0, int nreal, int nobj, int ncon, int nbin, vector<int> &nbits,
+         vector<pair<double,double> > &range_realvar,
+         vector<pair<double,double> > &range_binvar);
+
+   void cloneInitialize(Individual &ind);
+
+   void printObjs(ostream &output);
 
    int rank;
    double constr_violation;

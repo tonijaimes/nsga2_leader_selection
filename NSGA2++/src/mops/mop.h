@@ -19,10 +19,14 @@ public:
    MOP(const char *name, int numVariables, int numObjectives, int numConstraints = 0);
    virtual ~MOP();
    
-   /** The next 2 pure virtual methods must be implemented in the actual MOP class */
-   virtual void evaluate(vector<double> const &x, vector<double> &fx, vector<double> &gcons) const = 0;
-   virtual void evaluate(double const *x, double *eval, double *gcons) const = 0;
+   /** The next pure virtual method MUST be implemented in the actual MOP class */
+   virtual void evaluate(vector<double> const &x,
+                         vector<int> const &gene,
+                         vector<double> &fx,
+                         vector<double> &gcons) const = 0;
+
    /********************************************************************************/
+   //virtual void evaluate(vector<int> const &gene, vector<double> &fx, vector<double> &gcons) const;
 
    virtual void setNumObjectives(int numObjectives);
    virtual void setNumVariables(int numVariables);

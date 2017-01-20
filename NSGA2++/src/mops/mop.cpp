@@ -19,6 +19,18 @@ MOP::MOP(const char *name, int numVariables, int numObjectives, int numConstrain
 
 MOP::~MOP() {}
 
+//void MOP::evaluate(int const *gene, double *fx, double *gcons) const
+//{
+//   vector<int> geneCopy(gene, gene + nVariables);
+//   vector<double> fxCopy(fx, fx + nObjectives);
+//   vector<double> gconsCopy(gcons, gcons + nConstraints);
+//
+//   evaluate(geneCopy, fxCopy, gconsCopy);
+//
+//   copy(fxCopy.begin(), fxCopy.end(), fx);
+//   copy(gconsCopy.begin(), gconsCopy.end(), gcons);
+//}
+
 void MOP::setNumObjectives(int numObjectives) {
    if (isScalableObjSpc)
       this->nObjectives = numObjectives;

@@ -8,10 +8,7 @@
 #include <cstdlib>
 #include "RandUtils.h"
 #include "NSGA.h"
-#include "SensorNetwork.h"
-
-//#include "MOPsCatalog.h"
-//#include "theMOPS.h"
+#include "theMOPS.h"
 
 typedef struct {
    int popsize;        // Population size.
@@ -28,38 +25,24 @@ typedef struct {
 } NSGAParams;
 
 void exitMessage(double value, const char *elementName);
-void readRandomSeed(int argc, char **argv, double &seed);
-void readMOPParameters(int argc, char **argv, MOP **mop);
-void readNSGAParameters(int argc, char **argv, MOP *mop, NSGAParams &params);
+void readParameters(int argc, char **argv, MOP *mop, Randomizer &r, NSGAParams &params);
 
 int main(int argc, char **argv) {
-   MOP *mop = new SensorNet(10, 5, 5);
+   MOP *mop = new ZDT1();
 
-   cerr << "\nReading parameters..." << endl;
-   if (argc < 2) {
-      cout << "\n Usage ./nsga2r random_seed\n";
-      exit(1);
-   }
-
+   cout << "\nCreando Randomizer.\n";
    Randomizer r;
-   double seed;
-   readRandomSeed(argc, argv, seed);
-   r.setSeed(seed);
-
-   readMOPParameters(argc, argv, &mop);
-
    NSGAParams p;
-   readNSGAParameters(argc, argv, mop, p);
+
+   readParameters(argc, argv, mop, r, p);
 
    cout << "\nInput data successfully entered, now performing initialization.\n";
-   NSGA nsga(mop, &r,
-             p.popsize, p.ngen,
-             p.nreal, p.pcross_real, p.pmut_real, p.eta_c, p.eta_m,
-             p.nbin, p.pcross_bin, p.pmut_bin, p.nbits);
+   cout << "\nCreando NSGA.\n";
+   NSGA nsga(mop, &r, p.popsize, p.ngen,
+                      p.nreal, p.pcross_real, p.pmut_real, p.eta_c, p.eta_m,
+                      p.nbin, p.pcross_bin, p.pmut_bin, p.nbits);
+   cout << "\nNSGA creado.\n";
 
-   cout << "\nNSGA-II was successfully created.\n";
-
-   cout << "\nNow performing optimization...\n";
    nsga.optimize();
 
    cout << "\nGenerations finished, now reporting solutions.";
@@ -75,42 +58,25 @@ void exitMessage(double value, const char *elementName)
    exit (1);
 }
 
-void readRandomSeed(int argc, char **argv, double &seed) {
-   seed = (double) atof(argv[1]);
-   if (seed <= 0.0 || seed >= 1.0) {
-      cout << "\n Entered seed value is wrong, seed value must be in (0,1) \n";
-      exit(0);
+void readParameters(int argc, char **argv, MOP *mop, Randomizer &r, NSGAParams &params)
+{
+   if (argc<2)
+   {
+      cout << "\n Usage ./nsga2r random_seed \n";
+      exit(1);
    }
-}
 
+   double seed = (double) atof(argv[1]);
+   if (seed <= 0.0 || seed >= 1.0)
+   {
+      cout << "\n Entered seed value is wrong, seed value must be in (0,1) \n";
+      exit(1);
+   }
 
-void readMOPParameters(int argc, char **argv, MOP **mop)
-{
-   cout << "\nThe MOP selected is " << (*mop)->getName() << endl;
+   r.setSeed(seed);
 
-//   *mop = mops.selectMOP(mopName);
-//   if (*mop == NULL) {
-//      cout << "MOP '" << mopName << "' does not exists. Available MOPs: \n\n";
-//      mops.displayMOPList();
-//      exit(0);
-//   }
-//
-//   //TODO: check if there are more parameters for MOP, namely # variables and #objectives.
-//   if ((*mop)->isScalableObjSpace()) {
-//      if (argc >= 6) { //Read num. of variables and objectives.
-//         int nObjectives = (int) atoi(argv[4]);
-//         int nVariables  = (int) atoi(argv[5]);
-//
-//         (*mop)->setNumVariables(nVariables);
-//         (*mop)->setNumObjectives(nObjectives);
-//      }
-//   }
-}
-
-void readNSGAParameters(int argc, char **argv, MOP *mop, NSGAParams &params)
-{
-   cout << "\nEnter the problem relevant and algorithm relevant parameters...";
-   cout << "\nEnter the population size (a multiple of 4) : ";
+   cout << "\n Enter the problem relevant and algorithm relevant parameters...";
+   cout << "\n Enter the population size (a multiple of 4) : ";
    scanf("%d", &(params.popsize));
    if (params.popsize < 4 || (params.popsize % 4) != 0)
       exitMessage(params.popsize, "population size");
@@ -120,19 +86,13 @@ void readNSGAParameters(int argc, char **argv, MOP *mop, NSGAParams &params)
    if ( params.ngen < 1 )
       exitMessage(params.ngen, "number of generations");
 
-   cout << "\n There is a total of " << mop->getNumVariables()
-   << " VARIABLES for problem " << mop->getName() << ".";
+   cout << "\n There are a total of " << mop->getNumVariables()
+   << " variables for problem " << mop->getName() << ".";
 
    cout << "\n Enter the number of real variables: ";
    scanf("%d", &(params.nreal));
-   if (params.nreal < 0 || params.nreal > mop->getNumVariables())
+   if (params.nreal < 0)
       exitMessage(params.nreal, "number of real variables");
-
-   params.nbin = mop->getNumVariables() - params.nreal;
-   if ( params.nbin < 0 ) // Esto no debe ser necesario.
-      exitMessage(params.nbin, "number of binary variables");
-
-   cout << "\n The " << params.nbin << " remaining variables will have binary representation.\n";
 
    if (params.nreal != 0)
    {
@@ -157,12 +117,17 @@ void readNSGAParameters(int argc, char **argv, MOP *mop, NSGAParams &params)
          exitMessage(params.eta_m, "distribution index for mutation");
    }
 
+   cout << "\n Enter the number of binary variables: ";
+   scanf("%d", &(params.nbin));
+   if ( params.nbin < 0 )
+      exitMessage(params.nbin, "number of binary variables");
+
    if (params.nbin != 0)
    {
       params.nbits.resize(params.nbin);
       for (int i=0; i < params.nbin; ++i)
       {
-         cout << "\n Enter the number of bits for binary variable " << i+1 << ": ";
+         cout << "\n Enter the number of bits for binary variable: " << i+1;
          scanf ("%d", &(params.nbits[i]));
          if (params.nbits[i] < 1)
             exitMessage(params.nbits[i], "number of bits for binary variable");
@@ -176,5 +141,10 @@ void readNSGAParameters(int argc, char **argv, MOP *mop, NSGAParams &params)
       scanf ("%lf", &(params.pmut_bin));
       if (params.pmut_bin < 0.0 || params.pmut_bin > 1.0)
          exitMessage(params.pmut_bin, "probability  of mutation of binary variables");
+   }
+
+   if (params.nreal==0 && params.nbin==0) {
+      cout << "\nNumber of real as well as binary variables, both are zero, hence exiting.\n";
+      exit(1);
    }
 }

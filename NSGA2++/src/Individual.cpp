@@ -9,6 +9,9 @@
 #include "RandUtils.h"
 #include <cassert>
 #include <cmath>
+#include <iostream>
+
+using namespace std;
 
 Individual::Individual() {}
 
@@ -20,17 +23,43 @@ Individual::Individual(int nreal, int nobj, int ncon, int nbin, vector<int> &nbi
    rndInitialize(nreal, nobj, ncon, nbin, nbits, range_realvar, range_binvar, r);
 }
 
+void Individual::cloneInitialize(Individual &ind) {
+   assert(ind.xreal.size() >= 0);
+   assert(ind.xbin.size()  >= 0);
+   assert((ind.xreal.size() + ind.xbin.size())  >= 1); /* at least one variable. */
+   assert(ind.obj.size()  >= 2);
+   assert(ind.constr.size()  >= 0);
+   assert(ind.nbits.size() == (unsigned) ind.xbin.size());
+   assert(ind.range_realvar.size() == (unsigned) ind.xreal.size());
+//   assert(ind.range_binvar.size() == (unsigned) ind.xbin.size());
+
+   this->nbin = ind.xbin.size();
+   this->nbits = ind.nbits;
+   this->range_realvar = ind.range_realvar;
+   this->range_binvar = ind.range_binvar;
+
+   xreal  = ind.xreal;
+   xbin   = ind.xbin;
+   obj    = ind.obj;
+   constr = ind.constr;
+   gene   = ind.gene;
+}
+
 void Individual::rndInitialize(int nreal, int nobj, int ncon, int nbin, vector<int> &nbits,
       vector<pair<double,double> > &range_realvar,
       vector<pair<double,double> > &range_binvar, Randomizer *r)
 {
-   assert(nreal < 0);
-   assert(nobj  < 2);
-   assert(ncon  < 0);
-   assert(nbin  < 0);
-   assert(nbits.size() != nbin);
-   assert(range_realvar.size() != nreal);
-   assert(range_binvar.size() != nbin);
+//	cout << "range_binvar.size()=" << range_binvar.size() << "\n"
+//	     << "nbin= " << nbin << endl;
+
+   assert(nreal >= 0);
+   assert(nbin  >= 0);
+   assert((nreal + nbin)  >= 1);
+   assert(nobj  >= 2);
+   assert(ncon  >= 0);
+   assert(nbits.size() == (unsigned)nbin);
+   assert(range_realvar.size() == (unsigned)nreal);
+//   assert(range_binvar.size() == (unsigned)nbin);
 
    xreal.resize(nreal, 0.0);
    obj.resize(nobj, 0.0);
@@ -40,24 +69,27 @@ void Individual::rndInitialize(int nreal, int nobj, int ncon, int nbin, vector<i
    this->range_realvar = range_realvar;
    this->range_binvar = range_binvar;
 
-   if (nbin != 0)
-   {
+   if (nbin != 0) {
        xbin.resize(nbin, 0.0);
-
        gene.resize(nbin);
        for (int j=0; j < nbin; ++j)
           gene[j].resize(nbits[j], 1);
    }
 
    /* Initialize real and binary variables at random. */
-   if (nreal != 0)
-   {
-       for (int j=0; j < nreal; ++j)
-           xreal[j] = r->rndreal(range_realvar[j].first, range_realvar[j].second);
+   //cout << "Random seed: " << r->getSeed() << endl;
+   double x;
+   if (nreal != 0) {
+       for (int j=0; j < nreal; ++j) {
+           x = r->rndreal(range_realvar[j].first, range_realvar[j].second);
+           xreal[j] = x;
+           //xreal[j] = r->rndreal(range_realvar[j].first, range_realvar[j].second);
+           //cout << x << "\t";
+       }
+       //cout << "\n";
    }
 
-   if (nbin !=0 )
-   {
+   if (nbin !=0 ) {
        for (int j=0; j < nbin; ++j)
            for (int k=0; k < nbits[j]; ++k)
                gene[j][k] = (r->randomperc() <= 0.5) ? 0 : 1;
@@ -116,7 +148,61 @@ void Individual::rndInitialize(int nreal, int nobj, int ncon, int nbin, vector<i
 */
 }
 
+
+void Individual::initialize(vector<double>& x0,
+                            int nreal, int nobj, int ncon, int nbin, vector<int> &nbits,
+                            vector<pair<double,double> > &range_realvar,
+                            vector<pair<double,double> > &range_binvar)
+{
+// cout << "range_binvar.size()=" << range_binvar.size() << "\n"
+//      << "nbin= " << nbin << endl;
+
+   //This is only for real enconded variables, so nbin must be 0.
+   assert(nreal >= 1 && (int)x0.size() == nreal);
+   assert(nbin  == 0);
+   assert(nobj  >= 2);
+   assert(ncon  >= 0);
+   assert(nbits.size() == (unsigned)nbin);
+   assert(range_realvar.size() == (unsigned)nreal);
+//   assert(range_binvar.size() == (unsigned)nbin);
+
+   xreal.resize(nreal, 0.0);
+   obj.resize(nobj, 0.0);
+   constr.resize(ncon, 0.0);
+   this->nbin = nbin;
+   this->nbits = nbits;
+   this->range_realvar = range_realvar;
+   this->range_binvar = range_binvar;
+
+   if (nreal != 0) {
+       for (int j = 0; j < nreal; ++j) {
+           assert(x0[j] >= range_realvar[j].first && x0[j] <= range_realvar[j].second);
+           xreal[j] = x0[j];
+       }
+   }
+}
+
 Individual::~Individual() {}
+
+void Individual::printObjs(ostream &output) {
+	for (unsigned i = 0; i < obj.size(); ++i)
+		output << obj[i] << " ";
+}
+
+void Individual::copyIndividual(Individual &ind) {
+   rank = ind.rank;
+   constr_violation = ind.constr_violation;
+   crowd_dist = ind.crowd_dist;
+   obj = ind.obj;
+   constr = ind.constr;
+   xreal = ind.xreal;
+   xbin = ind.xbin;
+   nbin = ind.nbin;
+   gene = ind.gene;
+   nbits = ind.nbits;
+   range_realvar = ind.range_realvar;
+   range_binvar = ind.range_binvar;
+}
 
 void Individual::decode()
 {
@@ -124,18 +210,18 @@ void Individual::decode()
 
    if (nbin!=0)
    {
-       for (int j=0; j < gene.size(); ++j)
+       for (unsigned j=0; j < gene.size(); ++j)
        {
            sum = 0.0;
-           for (int k=0;  k < gene[j].size(); ++k)
+           for (unsigned k=0;  k < gene[j].size(); ++k)
            {
                if (gene[j][k] == 1)
                    sum += pow(2, gene[j].size() - 1 - k);
            }
 
            xbin[j] = range_binvar[j].first +
-                    (double) sum * (range_binvar[j].second - range_binvar[j].first) /
-                                   (double) ( pow(2, gene[j].size())-1 );
+                    (double) sum * (range_binvar[j].first, range_binvar[j].second) /
+                                   (double) (pow(2, gene[j].size()) - 1);
        }
    }
 }

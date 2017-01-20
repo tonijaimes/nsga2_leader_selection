@@ -9,7 +9,7 @@
 #include "Population.h"
 
 Population::Population(int size) {
-   assert(size < 4 || size % 4 != 0);
+   assert(size >= 4 && size % 4 == 0);
 
    this->size = size;
    ind = new Individual* [size];
@@ -24,6 +24,51 @@ Population::Population(int size) {
        allocate_memory_ind (&(pop->ind[i]));
    }
    */
+}
+
+void Population::cloneIndInitialize(Individual *base) {
+   nreal = base->xreal.size();
+   nobj = base->obj.size();
+   ncon = base->constr.size();
+   nbin = base->xbin.size();
+   nbits = base->nbits;
+   range_realvar = base->range_realvar;
+   range_binvar = base->range_binvar;
+
+   for (int i = 0; i < size; ++i)
+      ind[i]->cloneInitialize( *base );
+}
+
+void Population::cloneInitialize(Population &pop) {
+   if (size != pop.size) {
+      /* Delete current individuals. */
+      for (int i = 0; i < size; ++i)
+         ind[i]->~Individual();
+      delete[] ind;
+
+      size = pop.size;
+      ind = new Individual* [size];
+   }
+
+   nreal = pop.nreal;
+   nobj = pop.nobj;
+   ncon = pop.ncon;
+   nbin = pop.nbin;
+   nbits = pop.nbits;
+   range_realvar = pop.range_realvar;
+   range_binvar = pop.range_binvar;
+
+   for (int i = 0; i < size; ++i)
+      ind[i]->cloneInitialize(*(pop.ind[i]));
+}
+
+void Population::copyPopopulation(Population &pop, int position) {
+   /* is there enough space to copy all members of pop from the given position? */
+   assert(size >= position + pop.size);
+
+   /* Copy each individual. */
+   for (int i = 0; i < pop.size; ++i)
+      ind[i + position]->copyIndividual(*(pop.ind[i]));
 }
 
 void Population::rndInitialize(int nreal, int nobj, int ncon, int nbin, vector<int> &nbits,
@@ -47,16 +92,14 @@ int Population::getSize() {
 }
 
 void Population::decode_pop() {
-   if (ind[0]->xbin.size() != 0)
-   {
+   if (ind[0]->xbin.size() != 0) /* If there are binary variables */
        for (int i=0; i < size; i++)
           ind[i]->decode();
-   }
 }
 
 void Population::evaluate_pop(MOP *mop) {
    for (int i=0; i < size; ++i) {
-      mop->evaluate(ind[i]->xreal, ind[i]->obj, ind[i]->constr);
+      mop->evaluate(ind[i]->xreal, ind[i]->gene[0], ind[i]->obj, ind[i]->constr);
 
       if (mop->getNumConstraints() == 0)
           ind[i]->constr_violation = 0.0;
@@ -64,10 +107,8 @@ void Population::evaluate_pop(MOP *mop) {
       {
           ind[i]->constr_violation = 0.0;
           for (int j=0; j < mop->getNumConstraints(); ++j)
-          {
               if ( ind[i]->constr[j] < 0.0 )
                   ind[i]->constr_violation += ind[i]->constr[j];
-          }
       }
    }
 }
