@@ -69,6 +69,9 @@ void Individual::rndInitialize(int nreal, int nobj, int ncon, int nbin, vector<i
    this->range_realvar = range_realvar;
    this->range_binvar = range_binvar;
 
+   //cout << "Range real size= "<< this->range_realvar.size() << " nreal=" << nreal;
+   //cout << "Range bin size= "<< this->range_binvar.size() << " nbin=" << this->nbin;
+
    if (nbin != 0) {
        xbin.resize(nbin, 0.0);
        gene.resize(nbin);

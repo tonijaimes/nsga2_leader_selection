@@ -5,9 +5,9 @@
  *      Author: antonio
  */
 
+#include <NSGA_aux.h>
 #include <cstdlib>
 #include "RandUtils.h"
-#include "NSGA.h"
 #include "SensorNetwork.h"
 
 //#include "MOPsCatalog.h"
@@ -52,10 +52,7 @@ int main(int argc, char **argv) {
    readNSGAParameters(argc, argv, mop, p);
 
    cout << "\nInput data successfully entered, now performing initialization.\n";
-   NSGA nsga(mop, &r,
-             p.popsize, p.ngen,
-             p.nreal, p.pcross_real, p.pmut_real, p.eta_c, p.eta_m,
-             p.nbin, p.pcross_bin, p.pmut_bin, p.nbits);
+   NSGA nsga(mop, &r,&p);
 
    cout << "\nNSGA-II was successfully created.\n";
 
@@ -124,7 +121,9 @@ void readNSGAParameters(int argc, char **argv, MOP *mop, NSGAParams &params)
    << " VARIABLES for problem " << mop->getName() << ".";
 
    cout << "\n Enter the number of real variables: ";
-   scanf("%d", &(params.nreal));
+   //scanf("%d", &(params.nreal));
+
+   params.nreal = 0;
    if (params.nreal < 0 || params.nreal > mop->getNumVariables())
       exitMessage(params.nreal, "number of real variables");
 
@@ -159,6 +158,10 @@ void readNSGAParameters(int argc, char **argv, MOP *mop, NSGAParams &params)
 
    if (params.nbin != 0)
    {
+      //ESTO ES PARA UNA VARIABLE BINARIA CON UN BIT POR CADA SENSOR
+      params.nbits.resize(1, params.nbin);   // vector nbits de longitud 1 con el valor de nbin (Núm sensores).
+      params.nbin = 1; // Suponer que es una sola variable
+/*
       params.nbits.resize(params.nbin);
       for (int i=0; i < params.nbin; ++i)
       {
@@ -167,13 +170,15 @@ void readNSGAParameters(int argc, char **argv, MOP *mop, NSGAParams &params)
          if (params.nbits[i] < 1)
             exitMessage(params.nbits[i], "number of bits for binary variable");
       }
+      */
       cout << "\nEnter the probability of crossover of binary variable (0.6-1.0): ";
       scanf ("%lf", &(params.pcross_bin));
       if (params.pcross_bin < 0.0 || params.pcross_bin > 1.0)
          exitMessage(params.pcross_bin, "probability of crossover of binary variables");
 
       cout << "\n Enter the probability of mutation of binary variables (1/nbits): ";
-      scanf ("%lf", &(params.pmut_bin));
+      params.pmut_bin = 1.0 / params.nbits[0];
+      //scanf ("%lf", &(params.pmut_bin));
       if (params.pmut_bin < 0.0 || params.pmut_bin > 1.0)
          exitMessage(params.pmut_bin, "probability  of mutation of binary variables");
    }
