@@ -7,7 +7,7 @@
 class SensorNet : public MOP
 {
 public:
-   SensorNet(int nNodos = 20, int nRows = 20, int nCols = 50);
+   SensorNet(int nNodos = 20, int nRows = 200, int nCols = 500);
 	virtual ~SensorNet();
 	
    void evaluate(vector<double> const &x, vector<int> const &gene,
@@ -22,6 +22,7 @@ private:
    int const BASE_ID = 0;
    vector<pair<int,int> > sensorsPos;
    double const initEnergy = 9.0e6; // Energy given in micro Joules, 9x10^6 micro Joules = 9 Joules
+   int numPackets = 10;
 
 
    double dist(pair<int,int> const &p1, pair<int,int> const &p2) const;

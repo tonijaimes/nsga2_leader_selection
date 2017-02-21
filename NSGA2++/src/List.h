@@ -8,13 +8,13 @@
 #ifndef LIST_H_
 #define LIST_H_
 
-typedef struct lists
+typedef struct nodeList
 {
     int index;
-    struct lists *parent;
-    struct lists *child;
+    struct nodeList *parent;
+    struct nodeList *child;
 }
-list;
+myList;
 
 /*
 class List {

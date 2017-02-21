@@ -13,11 +13,11 @@
 #include <cassert>
 #include <stdexcept>
 #include "NSGA.h"
-#include "MetricsProxy.h"
-#include "Metrics.h"
-#include "OStasisDetector.h"
-#include "VectorTools.h"
-#include "Archive.h"
+//#include "MetricsProxy.h"
+//#include "Metrics.h"
+//#include "OStasisDetector.h"
+//#include "VectorTools.h"
+//#include "Archive.h"
 
 using namespace std;
 
@@ -189,7 +189,10 @@ void NSGA::optimize()
 //   initialize_pop(mixed_pop);
 
    cout << "\n Initialization done, now performing first generation.";
-   decode_pop(parent_pop);
+
+   //TODO: Para sensores no se necesita decodificar
+   //decode_pop(parent_pop);
+
    evaluate_pop (parent_pop);
    assign_rank_and_crowding_distance(parent_pop);
    report_pop(parent_pop, file_firstPop);
@@ -253,22 +256,22 @@ void NSGA::optimize()
 }
 
 
-string NSGA::rangesToStr(int digitsPrec, const char *delimiter) {
-   ostringstream strStream;
-
-   strStream << fixed;
-   for (int i = 0; i < nobj-1; ++i) {
-      strStream << setw(5 + digitsPrec) << setprecision(1 + digitsPrec)
-      << "[" << range_ndset.at(i).first << delimiter
-             << range_ndset.at(i).second << "]\n";
-   }
-
-   strStream << setw(5 + digitsPrec) << setprecision(1 + digitsPrec)
-             << "[" << range_ndset.at(nobj-1).first << delimiter
-                    << range_ndset.at(nobj-1).second << "]";
-
-   return strStream.str();
-}
+//string NSGA::rangesToStr(int digitsPrec, const char *delimiter) {
+//   ostringstream strStream;
+//
+//   strStream << fixed;
+//   for (int i = 0; i < nobj-1; ++i) {
+//      strStream << setw(5 + digitsPrec) << setprecision(1 + digitsPrec)
+//      << "[" << range_ndset.at(i).first << delimiter
+//             << range_ndset.at(i).second << "]\n";
+//   }
+//
+//   strStream << setw(5 + digitsPrec) << setprecision(1 + digitsPrec)
+//             << "[" << range_ndset.at(nobj-1).first << delimiter
+//                    << range_ndset.at(nobj-1).second << "]";
+//
+//   return strStream.str();
+//}
 
 
 void NSGA::openInfoFiles() {
@@ -335,94 +338,94 @@ void NSGA::closeInfoFiles() {
 }
 
 
-void NSGA::subspaces_fill_nondominated_sort(
-         Population *mixed_pop,
-         Population *new_pop,
-         vector<vector<int> > &oSpaces)
-{
-   cout << "\n\n\nEntró al subspaces_fill\n" << endl;
-   /* Size of the subpopulation ranked in each objective subspace. */
-   int subSpacePopSize = parent_pop->getSize() / oSpaces.size(); /* integer division */
+//void NSGA::subspaces_fill_nondominated_sort(
+//         Population *mixed_pop,
+//         Population *new_pop,
+//         vector<vector<int> > &oSpaces)
+//{
+//   cout << "\n\n\nEntró al subspaces_fill\n" << endl;
+//   /* Size of the subpopulation ranked in each objective subspace. */
+//   int subSpacePopSize = parent_pop->getSize() / oSpaces.size(); /* integer division */
+//
+//   /* For each objective subspace */
+//   int initPosition = 0; /* position in parent_pop to copy the whole sub_parent_pop */
+//   for (unsigned s = 0; s < oSpaces.size(); ++s) {
+//      /* In case of parent_pop's size was not divisible by numSubSpaces, the last
+//         subpopulation will have the total pop - the individuals already distributed. */
+//      if (s == (oSpaces.size() - 1)) {
+////         cerr << "\n This is the last subpopulation..." << endl;
+//         subSpacePopSize = parent_pop->getSize() - (s * subSpacePopSize);
+//      }
+//
+//      Population subSpace_parent_pop(subSpacePopSize);
+//      subSpace_parent_pop.cloneIndInitialize(mixed_pop->ind[0]);
+//      //TODO: Inicializar la población.
+////      cerr << "\nThe subpopulation " << s
+////           << " has been initaliazed with " << subSpacePopSize << " individuals.";
+//
+//      /* Truncate mixed_pop by nondominated fronts. */
+//      fill_nondominated_sort(mixed_pop, &subSpace_parent_pop, oSpaces[s]);
+//      report_pop_objs(&subSpace_parent_pop, file_everySubParentPop);
+//      file_everySubParentPop << "\n\n";
+//      parent_pop->copyPopopulation(subSpace_parent_pop, initPosition);
+//
+//      //cout << "\nGlobal Parent pop\n";
+//      //report_pop_objs(parent_pop, cout);
+//
+//      initPosition += subSpacePopSize;
+//   }
+//}
 
-   /* For each objective subspace */
-   int initPosition = 0; /* position in parent_pop to copy the whole sub_parent_pop */
-   for (unsigned s = 0; s < oSpaces.size(); ++s) {
-      /* In case of parent_pop's size was not divisible by numSubSpaces, the last
-         subpopulation will have the total pop - the individuals already distributed. */
-      if (s == (oSpaces.size() - 1)) {
-//         cerr << "\n This is the last subpopulation..." << endl;
-         subSpacePopSize = parent_pop->getSize() - (s * subSpacePopSize);
-      }
-
-      Population subSpace_parent_pop(subSpacePopSize);
-      subSpace_parent_pop.cloneIndInitialize(mixed_pop->ind[0]);
-      //TODO: Inicializar la población.
-//      cerr << "\nThe subpopulation " << s
-//           << " has been initaliazed with " << subSpacePopSize << " individuals.";
-
-      /* Truncate mixed_pop by nondominated fronts. */
-      fill_nondominated_sort(mixed_pop, &subSpace_parent_pop, oSpaces[s]);
-      report_pop_objs(&subSpace_parent_pop, file_everySubParentPop);
-      file_everySubParentPop << "\n\n";
-      parent_pop->copyPopopulation(subSpace_parent_pop, initPosition);
-
-      //cout << "\nGlobal Parent pop\n";
-      //report_pop_objs(parent_pop, cout);
-
-      initPosition += subSpacePopSize;
-   }
-}
-
-void NSGA::subspaces_SortAndTruncationAndSelection(
-		Population *mixed_pop,
-		Population *new_parent_pop,
-		Population *new_child_pop,
-		vector<vector<int> > &oSpaces)
-{
-	report_pop_objs(mixed_pop, file_inParentPop);
-	file_inParentPop << "\n\n";
-
-   /* Size of the subpopulation ranked in each objective subspace. */
-   int subSpacePopSize = new_parent_pop->getSize() / oSpaces.size(); /* integer division */
-
-   /* For each objective subspace */
-   int initPosition = 0; /* position in child_pop to start the copy of sub_child_pop */
-   for (unsigned s = 0; s < oSpaces.size(); ++s) {
-      /* In case of parent_pop's size was not divisible by numSubSpaces, the last
-         subpopulation will have the total pop - the individuals already distributed. */
-      if (s == (oSpaces.size() - 1)) {
-//         cerr << "\n This is the last subpopulation..." << endl;
-         subSpacePopSize = new_parent_pop->getSize() - (s * subSpacePopSize);
-      }
-
-      Population subSpace_parent_pop(subSpacePopSize);
-      Population subSpace_child_pop(subSpacePopSize);
-      subSpace_parent_pop.cloneIndInitialize(mixed_pop->ind[0]);
-      subSpace_child_pop.cloneIndInitialize(mixed_pop->ind[0]);
-//      cerr << "\n\nThe child subpopulation has size " << subSpace_child_pop.size << " and is :\n";
-//      report_pop_objs(&subSpace_child_pop, cout);
-
-      /* Truncate mixed_pop by nondominated fronts. */
-      fill_nondominated_sort(mixed_pop, &subSpace_parent_pop, oSpaces[s]);
-      //cout << "SubParentPop Size = " << subSpace_parent_pop.getSize() << endl;
-      report_pop_objs(&subSpace_parent_pop, file_everySubParentPop);
-      file_everySubParentPop << "\n\n";
-      new_parent_pop->copyPopopulation(subSpace_parent_pop, initPosition);
-
-      selection(&subSpace_parent_pop, &subSpace_child_pop);
-      //cout << "SubChildPop Size = " << subSpace_child_pop.getSize() << endl;
-      decode_pop(&subSpace_child_pop);
-      evaluate_pop(&subSpace_child_pop);
-      report_pop_objs(&subSpace_child_pop, file_everySubChildPop);
-      file_everySubChildPop << "\n\n";
-      new_child_pop->copyPopopulation(subSpace_child_pop, initPosition);
-
-      //cout << "\nGlobal Parent pop\n";
-      //report_pop_objs(parent_pop, cout);
-
-      initPosition += subSpacePopSize;
-   }
-}
+//void NSGA::subspaces_SortAndTruncationAndSelection(
+//		Population *mixed_pop,
+//		Population *new_parent_pop,
+//		Population *new_child_pop,
+//		vector<vector<int> > &oSpaces)
+//{
+//	report_pop_objs(mixed_pop, file_inParentPop);
+//	file_inParentPop << "\n\n";
+//
+//   /* Size of the subpopulation ranked in each objective subspace. */
+//   int subSpacePopSize = new_parent_pop->getSize() / oSpaces.size(); /* integer division */
+//
+//   /* For each objective subspace */
+//   int initPosition = 0; /* position in child_pop to start the copy of sub_child_pop */
+//   for (unsigned s = 0; s < oSpaces.size(); ++s) {
+//      /* In case of parent_pop's size was not divisible by numSubSpaces, the last
+//         subpopulation will have the total pop - the individuals already distributed. */
+//      if (s == (oSpaces.size() - 1)) {
+////         cerr << "\n This is the last subpopulation..." << endl;
+//         subSpacePopSize = new_parent_pop->getSize() - (s * subSpacePopSize);
+//      }
+//
+//      Population subSpace_parent_pop(subSpacePopSize);
+//      Population subSpace_child_pop(subSpacePopSize);
+//      subSpace_parent_pop.cloneIndInitialize(mixed_pop->ind[0]);
+//      subSpace_child_pop.cloneIndInitialize(mixed_pop->ind[0]);
+////      cerr << "\n\nThe child subpopulation has size " << subSpace_child_pop.size << " and is :\n";
+////      report_pop_objs(&subSpace_child_pop, cout);
+//
+//      /* Truncate mixed_pop by nondominated fronts. */
+//      fill_nondominated_sort(mixed_pop, &subSpace_parent_pop, oSpaces[s]);
+//      //cout << "SubParentPop Size = " << subSpace_parent_pop.getSize() << endl;
+//      report_pop_objs(&subSpace_parent_pop, file_everySubParentPop);
+//      file_everySubParentPop << "\n\n";
+//      new_parent_pop->copyPopopulation(subSpace_parent_pop, initPosition);
+//
+//      selection(&subSpace_parent_pop, &subSpace_child_pop);
+//      //cout << "SubChildPop Size = " << subSpace_child_pop.getSize() << endl;
+//      decode_pop(&subSpace_child_pop);
+//      evaluate_pop(&subSpace_child_pop);
+//      report_pop_objs(&subSpace_child_pop, file_everySubChildPop);
+//      file_everySubChildPop << "\n\n";
+//      new_child_pop->copyPopopulation(subSpace_child_pop, initPosition);
+//
+//      //cout << "\nGlobal Parent pop\n";
+//      //report_pop_objs(parent_pop, cout);
+//
+//      initPosition += subSpacePopSize;
+//   }
+//}
 
 
 /*

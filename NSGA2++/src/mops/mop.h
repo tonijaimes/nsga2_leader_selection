@@ -41,6 +41,7 @@ public:
    const bool isScalableVarSpace() const;
    vector<pair<double,double> > getVarsRange() const;
 
+   vector<pair<double,double> > xRanges; /**< Range of the variables of the MOP. */
 
 protected:
    string name;           /**< The name given to the MOP for information purposes. */
@@ -49,7 +50,7 @@ protected:
    int nConstraints;      /**< Number of constraints of the MOP. */
    bool isScalableObjSpc; /**< Indicates if the MOP is scalable in the objective space. */
    bool isScalableVarSpc; /**< Indicates if the MOP is scalable in the decision space. */
-   vector<pair<double,double> > xRanges; /**< Range of the variables of the MOP. */
+
 
 //   vector<double> lowerB; /**< Lower bounds for each variable of the MOP. */
 //   vector<double> upperB; /**< Upper bounds for each variable of the MOP. */

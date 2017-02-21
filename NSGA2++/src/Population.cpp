@@ -7,6 +7,10 @@
 
 #include <cassert>
 #include "Population.h"
+#include <omp.h>
+#include <iostream>
+
+using namespace std;
 
 Population::Population(int size) {
    assert(size >= 4 && size % 4 == 0);
@@ -98,7 +102,9 @@ void Population::decode_pop() {
 }
 
 void Population::evaluate_pop(MOP *mop) {
-   for (int i=0; i < size; ++i) {
+   int i;
+   #pragma omp parallel for num_threads(16)
+   for (i=0; i < size; ++i) {
       mop->evaluate(ind[i]->xreal, ind[i]->gene[0], ind[i]->obj, ind[i]->constr);
 
       if (mop->getNumConstraints() == 0)

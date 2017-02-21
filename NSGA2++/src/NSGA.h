@@ -20,7 +20,7 @@
 #include "theMOPS.h"
 //#include "KOSSA.h"
 //#include "Partition.h"
-#include "myUtils.h"
+//#include "myUtils.h"
 ///#include "Archive.h"
 
 using namespace std;
@@ -153,7 +153,7 @@ public:
    vector<vector<double> > initialPop;
 
 
-   NSGA(MOP *mop, Randomizer *r, PartitionParams &p, NSGAParams &np);
+   NSGA(MOP *mop, Randomizer *r, NSGAParams &np);
 
    ~NSGA();
 
@@ -206,11 +206,11 @@ public:
 
    void assign_crowding_distance_list(Population *pop, myList *lst, int front_size);
    void assign_crowding_distance_list(Population *pop, myList *lst, int front_size, vector<int> &objSet);
-   void assign_crowding_distance_indices (Population *pop, int c1, int c2);
+   void assign_crowding_distance_indices (Population *pop, int c1, int c2); // <------
    void assign_crowding_distance_indices (Population *pop, int c1, int c2, vector<int> &objSet);
    void assign_crowding_distance (Population *pop, vector<int> &dist, vector<vector<int> >  &obj_array,
                                   vector<int> &objSet, int front_size);
-   void assign_crowding_distance (Population *pop, int *dist, int **obj_array, int front_size);
+   void assign_crowding_distance (Population *pop, int *dist, int **obj_array, int front_size); // <----
 
    void decode_pop (Population *pop);
    void decode_ind (Individual *ind);
@@ -226,14 +226,14 @@ public:
    void crowding_fill(Population *mixed_pop, Population *new_pop, int count, int front_size,
                       myList *cur, vector<int> &objSet);
    void crowding_fill(Population *mixed_pop, Population *new_pop, int count, int front_size,
-   		             myList *elite);
+   		             myList *elite); //<----
 
    void initialize_pop (Population *pop);
    void initialize_pop_fix(Population *pop);
    void initialize_ind (Individual *ind);
 
-   void insert (myList *node, int x);
-   myList* del (myList *node);
+   void insert(myList *node, int x);
+   myList* del(myList *node);
 
    void merge(Population *pop1, Population *pop2, Population *pop3);
    void copy_ind (Individual *ind1, Individual *ind2);

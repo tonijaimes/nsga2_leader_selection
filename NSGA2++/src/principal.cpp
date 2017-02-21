@@ -5,7 +5,7 @@
  *      Author: antonio
  */
 
-#include <NSGA_aux.h>
+#include <NSGA.h>
 #include <cstdlib>
 #include "RandUtils.h"
 #include "SensorNetwork.h"
@@ -13,19 +13,19 @@
 //#include "MOPsCatalog.h"
 //#include "theMOPS.h"
 
-typedef struct {
-   int popsize;        // Population size.
-   int ngen;           // Number of generations.
-   int nreal;          // Number of variables using a real encoding.
-   double pcross_real; // Crossover probability for real variables.
-   double pmut_real;   // Mutation probability for real variables.
-   double eta_c;
-   double eta_m;
-   int nbin;           // Number of variables using binary encoding.
-   vector<int> nbits;  // Bits for each binary variable.
-   double pcross_bin;  // Crossover probability for binary variables.
-   double pmut_bin;    // Mutation probability for binary variables.
-} NSGAParams;
+//typedef struct {
+//   int popsize;        // Population size.
+//   int ngen;           // Number of generations.
+//   int nreal;          // Number of variables using a real encoding.
+//   double pcross_real; // Crossover probability for real variables.
+//   double pmut_real;   // Mutation probability for real variables.
+//   double eta_c;
+//   double eta_m;
+//   int nbin;           // Number of variables using binary encoding.
+//   vector<int> nbits;  // Bits for each binary variable.
+//   double pcross_bin;  // Crossover probability for binary variables.
+//   double pmut_bin;    // Mutation probability for binary variables.
+//} NSGAParams;
 
 void exitMessage(double value, const char *elementName);
 void readRandomSeed(int argc, char **argv, double &seed);
@@ -33,7 +33,7 @@ void readMOPParameters(int argc, char **argv, MOP **mop);
 void readNSGAParameters(int argc, char **argv, MOP *mop, NSGAParams &params);
 
 int main(int argc, char **argv) {
-   MOP *mop = new SensorNet(10, 5, 5);
+   MOP *mop = new SensorNet(200, 2000, 2000);
 
    cerr << "\nReading parameters..." << endl;
    if (argc < 2) {
@@ -52,7 +52,7 @@ int main(int argc, char **argv) {
    readNSGAParameters(argc, argv, mop, p);
 
    cout << "\nInput data successfully entered, now performing initialization.\n";
-   NSGA nsga(mop, &r,&p);
+   NSGA nsga(mop, &r, p);
 
    cout << "\nNSGA-II was successfully created.\n";
 
